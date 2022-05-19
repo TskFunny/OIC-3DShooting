@@ -38,30 +38,51 @@ void CPlayer::Initialize(void){
 /**
  * 更新
  */
+#define MAX_SKILLTIME 100
+static int SkillTimer = 100;
 void CPlayer::Update(void){
 	//回転方向
 	float Roll = 0;
+	float m_Speed = PLAYER_SPEED;
+	float RotSpeed = MOF_ToRadian(10);
+
+	
+	if (g_pInput->IsKeyHold(MOFKEY_LSHIFT))
+	{
+		m_Speed *= 2;
+		RotSpeed *= 2;
+		SkillTimer--;
+	}
+	else
+	{
+		if (MAX_SKILLTIME > SkillTimer)
+		{
+			SkillTimer++;
+		}
+	}
+
+	//横移動
 	if (g_pInput->IsKeyHold(MOFKEY_LEFT))
 	{
-		m_Pos.x = max(m_Pos.x - PLAYER_SPEED, -FIELD_HALF_X);
+		m_Pos.x = max(m_Pos.x - m_Speed, -FIELD_HALF_X);
 		Roll -= MOF_MATH_PI;
 	}
-	if (g_pInput->IsKeyHold(MOFKEY_RIGHT))
+	else if (g_pInput->IsKeyHold(MOFKEY_RIGHT))
 	{
-		m_Pos.x = min(m_Pos.x + PLAYER_SPEED, FIELD_HALF_X);
+		m_Pos.x = min(m_Pos.x + m_Speed, FIELD_HALF_X);
 		Roll += MOF_MATH_PI;
 	}
+
 	if (g_pInput->IsKeyHold(MOFKEY_UP))
 	{
-		m_Pos.z = min(m_Pos.z + PLAYER_SPEED, FIELD_HALF_Z);
+		m_Pos.z = min(m_Pos.z + m_Speed, FIELD_HALF_Z);
 	}
 	if (g_pInput->IsKeyHold(MOFKEY_DOWN))
 	{
-		m_Pos.z = max(m_Pos.z - PLAYER_SPEED, -FIELD_HALF_Z);
+		m_Pos.z = max(m_Pos.z - m_Speed, -FIELD_HALF_Z);
 	}
 
-	//回転
-	float RotSpeed = MOF_ToRadian(10);
+    //回転
 	if (Roll == 0)
 	{
 		RotSpeed = min(abs(m_RotZ) * 0.1f, RotSpeed);
@@ -83,6 +104,10 @@ void CPlayer::Render(void){
 	matWorld.SetTranslation(m_Pos);
 	// メッシュの描画
 	m_Mesh.Render(matWorld);
+	for (int i = 0; i < SkillTimer;i++)
+	{
+		CGraphicsUtilities::RenderString(800 + i * 2, 0, MOF_COLOR_BLUE, "i");
+	}
 }
 
 /**
@@ -92,6 +117,8 @@ void CPlayer::RenderDebugText(void){
 	// 位置の描画
 	CGraphicsUtilities::RenderString(10,40,MOF_XRGB(0,0,0),
 			"プレイヤー位置 X : %.1f , Y : %.1f , Z : %.1f",m_Pos.x,m_Pos.y,m_Pos.z);
+	
+	
 }
 
 /**

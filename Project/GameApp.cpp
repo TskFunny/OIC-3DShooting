@@ -10,6 +10,7 @@
 //INCLUDE
 #include	"GameApp.h"
 #include	"Player.h"
+#include	"Stage.h"
 
 // カメラ
 CCamera				gCamera;
@@ -17,8 +18,14 @@ CCamera				gCamera;
 CDirectionalLight	gLight;
 // プレイヤー
 CPlayer				gPlayer;
+// ステージ
+CStage				gStage;
 // デバッグ表示フラグ
 bool				gbDebug = false;
+
+CVector3			gCamPos;
+CVector3			gTargetPos;
+CVector3			gUpVector;
 
 /*************************************************************************//*!
 		@brief			アプリケーションの初期化
@@ -30,10 +37,13 @@ bool				gbDebug = false;
 MofBool CGameApp::Initialize(void){
 	//リソース配置ディレクトリの設定
 	CUtilities::SetCurrentDirectory("Resource");
+	gCamPos = Vector3(0, 6.0f, -17.0f);
+	gTargetPos = Vector3(0, 0, -10);
+	gUpVector = Vector3(0, 1, 0);
 
 	// カメラ初期化
 	gCamera.SetViewPort();
-	gCamera.LookAt(Vector3(0, 6.0f, -17.0f), Vector3(0, 0, -10), Vector3(0, 1, 0));
+	gCamera.LookAt(gCamPos, gTargetPos, gUpVector);
 	gCamera.PerspectiveFov(MOF_ToRadian(60.0f), 1024.0f / 768.0f, 0.01f, 1000.0f);
 	CGraphicsUtilities::SetCamera(&gCamera);
 
@@ -46,9 +56,13 @@ MofBool CGameApp::Initialize(void){
 
 	// プレイヤーの素材読み込み
 	gPlayer.Load();
+	// ステージの素材読み込み
+	gStage.Load();
 
 	// プレイヤーの状態初期化
 	gPlayer.Initialize();
+	//ステージの状態初期化
+	gStage.Initialize();
 	
 	return TRUE;
 }
@@ -64,6 +78,8 @@ MofBool CGameApp::Update(void){
 	g_pInput->RefreshKey();
 	// プレイヤーの更新
 	gPlayer.Update();
+	// ステージの更新
+	gStage.Update();
 	// デバッグ表示の切り替え
 	if (g_pInput->IsKeyPush(MOFKEY_F1))
 	{
@@ -72,12 +88,13 @@ MofBool CGameApp::Update(void){
 
 	//プレイヤーの動きに合わせてカメラを動かす
 	float posX = gPlayer.GetPosition().x * 0.4f;
-	CVector3 cpos = gCamera.GetViewPosition();
-	CVector3 tpos = gCamera.GetTargetPosition();
-	CVector3 vup = CVector3(0, 1, 0);
-	cpos.x = posX;
-	tpos.x = posX;
-	gCamera.LookAt(cpos, tpos, vup);
+	gCamPos = gCamera.GetViewPosition();
+	gTargetPos = gCamera.GetTargetPosition();
+	gUpVector = CVector3(0, 1, 0);
+	gCamPos.x = posX;
+	gTargetPos.x = posX;
+	gUpVector.RotationZ(gPlayer.GetPosition().x / FIELD_HALF_X * MOF_ToRadian(10.0f));
+	gCamera.LookAt(gCamPos, gTargetPos, gUpVector);
 	gCamera.Update();
 
 	return TRUE;
@@ -101,6 +118,8 @@ MofBool CGameApp::Render(void){
 
 	//プレイヤー描画
 	gPlayer.Render();
+	//ステージ描画
+	gStage.Render();
 
 	//3Dデバッグ描画
 	if (gbDebug)
@@ -117,6 +136,8 @@ MofBool CGameApp::Render(void){
 	//2Dデバッグ描画
 	if (gbDebug)
 	{
+		// ステージのデバッグ文字描画
+		gStage.RenderDebugText();
 		//プレイヤーのデバッグ文字描画
 		gPlayer.RenderDebugText();
 	}
@@ -134,5 +155,6 @@ MofBool CGameApp::Render(void){
 *//**************************************************************************/
 MofBool CGameApp::Release(void){
 	gPlayer.Release();
+	gStage.Release();
 	return TRUE;
 }
