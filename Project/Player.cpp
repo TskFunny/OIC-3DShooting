@@ -6,7 +6,12 @@
 CPlayer::CPlayer() :
 m_Mesh(),
 m_Pos(0.0f,0.0f,0.0f),
-m_RotZ(0.0f){
+m_RotZ(0.0f),
+m_ShotPos(0.0f,0.0f,0.0f),
+m_ShotMesh(),
+m_ShotArray(),
+m_ShotWait(),
+m_ShotType(false){
 }
 
 /**
@@ -24,6 +29,15 @@ bool CPlayer::Load(void){
 	{
 		return false;
 	}
+	//íeÇÃÉÅÉbÉVÉÖ
+	if (!m_ShotMesh.Load("pshot.mom"))
+	{
+		return false;
+	}
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		m_ShotArray[i].SetMesh(&m_ShotMesh);
+	}
 	return true;
 }
 
@@ -32,7 +46,13 @@ bool CPlayer::Load(void){
  */
 void CPlayer::Initialize(void){
 	m_Pos = Vector3(0.0f, 0.0f, -FIELD_HALF_Z + 2.0f);
+	m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
 	m_RotZ = 0;
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		m_ShotArray[i].Initialize();
+	}
+	m_ShotMode = MODE_DOUBLE;
 }
 
 /**
@@ -49,9 +69,12 @@ void CPlayer::Update(void){
 	
 	if (g_pInput->IsKeyHold(MOFKEY_LSHIFT))
 	{
-		m_Speed *= 2;
-		RotSpeed *= 2;
-		SkillTimer--;
+		if (SkillTimer > 0)
+		{
+			m_Speed *= 2;
+			RotSpeed *= 2;
+			SkillTimer--;
+		}		
 	}
 	else
 	{
@@ -92,8 +115,122 @@ void CPlayer::Update(void){
 		m_RotZ += Roll;
 	}
 	m_RotZ -= copysignf(min(RotSpeed, abs(m_RotZ)), m_RotZ);
+
+	//íeÇÃî≠éÀ
+	if (m_ShotWait <= 0)
+	{
+		if (g_pInput->IsKeyHold(MOFKEY_SPACE))
+		{
+			for (int cnt = 0; cnt < 2; cnt++)
+			{
+				for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+				{
+					if (m_ShotArray[i].GetShow()) { continue; }
+					if (m_ShotType == false)
+					{
+						m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
+					}
+					else if (m_ShotType == true)
+					{
+						m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
+					}		
+					m_ShotPos.RotationZ(m_RotZ);
+					m_ShotPos += m_Pos;
+					m_ShotWait = PLAYERSHOT_WAIT;
+					m_ShotArray[i].Fire(m_ShotPos);
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		m_ShotWait--;
+	}
+	if (m_ShotWait <= 0)
+	{
+		if (g_pInput->IsKeyHold(MOFKEY_P))
+		{
+			switch (m_ShotMode) {
+			case MODE_SINGLE:
+				UpdateSingleShot();
+				break;
+			case MODE_DOUBLE:
+				UpdateDoubleShot();
+				break;
+			case MODE_TRIPPLE:
+				UpdateTrippleShot();
+				break;
+			}
+		}
+	}
+	
+	// íeÇÃçXêV
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		m_ShotArray[i].Update();
+	}
 }
 
+void CPlayer::UpdateSingleShot() {
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		if (m_ShotArray[i].GetShow()) { continue; }
+		m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
+		m_ShotPos.RotationZ(m_RotZ);
+		m_ShotPos += m_Pos;
+		m_ShotWait = PLAYERSHOT_WAIT;
+		m_ShotArray[i].Fire(m_ShotPos);
+		break;
+	}
+}
+
+void CPlayer::UpdateDoubleShot() {
+	for (int cnt = 0; cnt < 2; cnt++)
+	{
+		for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+		{
+			if (m_ShotArray[i].GetShow()) { continue; }
+			m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
+			m_ShotPos.RotationZ(m_RotZ);
+			m_ShotPos += m_Pos;
+			m_ShotWait = PLAYERSHOT_WAIT;
+			m_ShotArray[i].Fire(m_ShotPos);
+			break;
+		}
+	}
+}
+
+void CPlayer::UpdateTrippleShot() {
+	for (int cnt = 0; cnt < 3; cnt++)
+	{
+		for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+		{
+			if (m_ShotArray[i].GetShow()) { continue; }
+			m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
+			m_ShotPos.RotationZ(m_RotZ);
+			m_ShotPos += m_Pos;
+			m_ShotWait = PLAYERSHOT_WAIT;
+			m_ShotArray[i].Fire(m_ShotPos);
+			break;
+		}
+	}
+}
+
+void CPlayer::UpdateShotMode() {
+	if (g_pInput->IsKeyPush(MOFKEY_1))
+	{
+		m_ShotMode = MODE_SINGLE;
+	}
+	else if (g_pInput->IsKeyPush(MOFKEY_2))
+	{
+		m_ShotMode = MODE_DOUBLE;
+	}
+	else if (g_pInput->IsKeyPush(MOFKEY_3))
+	{
+		m_ShotMode = MODE_TRIPPLE;
+	}
+}
 /**
  * ï`âÊ
  */
@@ -107,6 +244,11 @@ void CPlayer::Render(void){
 	for (int i = 0; i < SkillTimer;i++)
 	{
 		CGraphicsUtilities::RenderString(800 + i * 2, 0, MOF_COLOR_BLUE, "i");
+	}
+	// íeÇÃï`âÊ
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		m_ShotArray[i].Render();
 	}
 }
 
@@ -126,4 +268,5 @@ void CPlayer::RenderDebugText(void){
  */
 void CPlayer::Release(void){
 	m_Mesh.Release();
+	m_ShotMesh.Release();
 }

@@ -35,7 +35,7 @@ bool CStage::Load(){
  */
 void CStage::Initialize(){
 	m_BG.m_Angle.x = MOF_MATH_HALFPI;
-	m_BG.m_Angle.x = MOF_MATH_HALFPI;
+	m_BG.m_Angle.y = MOF_MATH_HALFPI;
 	m_BG.m_Scale = Vector3(200, 200, 200);
 	m_BG.m_Position.y = -15;
 	m_BG.SetImageRect(0, 0, m_BG.GetTexture()->GetWidth() * 4, m_BG.GetTexture()->GetHeight() * 4);
