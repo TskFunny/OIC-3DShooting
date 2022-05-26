@@ -26,7 +26,7 @@ void CPlayerShot::Initialize(void){
 /**
  * ”­ŽË
  */
-void CPlayerShot::Fire(const Vector3& p){
+void CPlayerShot::Fire(const Vector3& p,const Vector3& s,PlayerShotMode m){
 	m_Pos = p;
 	m_bShow = true;
 }

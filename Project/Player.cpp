@@ -121,7 +121,7 @@ void CPlayer::Update(void){
 	{
 		if (g_pInput->IsKeyHold(MOFKEY_SPACE))
 		{
-			for (int cnt = 0; cnt < 2; cnt++)
+			/*for (int cnt = 0; cnt < 2; cnt++)
 			{
 				for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 				{
@@ -140,7 +140,7 @@ void CPlayer::Update(void){
 					m_ShotArray[i].Fire(m_ShotPos);
 					break;
 				}
-			}
+			}*/
 		}
 	}
 	else
@@ -210,8 +210,9 @@ void CPlayer::UpdateTrippleShot() {
 			m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
 			m_ShotPos.RotationZ(m_RotZ);
 			m_ShotPos += m_Pos;
+			CVector3 spd(cnt * TRIPPLE_RAD - TRIPPLE_RAD, 0, PLAYERSHOT_SPEED);
 			m_ShotWait = PLAYERSHOT_WAIT;
-			m_ShotArray[i].Fire(m_ShotPos);
+			m_ShotArray[i].Fire(m_ShotPos,spd,m_ShotMode);
 			break;
 		}
 	}

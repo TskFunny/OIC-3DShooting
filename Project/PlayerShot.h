@@ -14,7 +14,7 @@ public:
 	CPlayerShot();
 	~CPlayerShot();
 	void Initialize();
-	void Fire(const Vector3& p);
+	void Fire(const Vector3& p, const Vector3& s,PlayerShotMode m);
 	void Update();
 	void Render();
 	void SetMesh(CMeshContainer *pm){ m_pMesh = pm; }
