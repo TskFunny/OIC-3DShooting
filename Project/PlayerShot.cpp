@@ -46,6 +46,31 @@ void CPlayerShot::Update(void){
 	}
 }
 
+void CPlayerShot::UpdateMode() {
+	switch (m_Mode)
+	{
+	case MODE_SINGLE:
+		UpdateSingleMode();
+		break;
+	case MODE_DOUBLE:
+		UpdateDoubleMode();
+		break;
+	case MODE_TRIPPLE:
+		UpdateTrippleMode();
+		break;
+	}
+}
+
+void CPlayerShot::UpdateSingleMode() {
+}
+
+void CPlayerShot::UpdateDoubleMode() {
+}
+
+void CPlayerShot::UpdateTrippleMode() {
+}
+
+
 /**
  * •`‰æ
  */

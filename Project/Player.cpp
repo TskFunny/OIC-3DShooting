@@ -116,37 +116,7 @@ void CPlayer::Update(void){
 	}
 	m_RotZ -= copysignf(min(RotSpeed, abs(m_RotZ)), m_RotZ);
 
-	//íeÇÃî≠éÀ
-	if (m_ShotWait <= 0)
-	{
-		if (g_pInput->IsKeyHold(MOFKEY_SPACE))
-		{
-			/*for (int cnt = 0; cnt < 2; cnt++)
-			{
-				for (int i = 0; i < PLAYERSHOT_COUNT; i++)
-				{
-					if (m_ShotArray[i].GetShow()) { continue; }
-					if (m_ShotType == false)
-					{
-						m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
-					}
-					else if (m_ShotType == true)
-					{
-						m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
-					}		
-					m_ShotPos.RotationZ(m_RotZ);
-					m_ShotPos += m_Pos;
-					m_ShotWait = PLAYERSHOT_WAIT;
-					m_ShotArray[i].Fire(m_ShotPos);
-					break;
-				}
-			}*/
-		}
-	}
-	else
-	{
-		m_ShotWait--;
-	}
+	UpdateShotMode();
 	if (m_ShotWait <= 0)
 	{
 		if (g_pInput->IsKeyHold(MOFKEY_P))
@@ -164,6 +134,10 @@ void CPlayer::Update(void){
 			}
 		}
 	}
+	else
+	{
+		m_ShotWait--;
+	}
 	
 	// íeÇÃçXêV
 	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
@@ -179,8 +153,9 @@ void CPlayer::UpdateSingleShot() {
 		m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
 		m_ShotPos.RotationZ(m_RotZ);
 		m_ShotPos += m_Pos;
+		CVector3 spd(0, 0, PLAYERSHOT_SPEED);
 		m_ShotWait = PLAYERSHOT_WAIT;
-		m_ShotArray[i].Fire(m_ShotPos);
+		m_ShotArray[i].Fire(m_ShotPos, spd, m_ShotMode);
 		break;
 	}
 }
@@ -194,8 +169,12 @@ void CPlayer::UpdateDoubleShot() {
 			m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
 			m_ShotPos.RotationZ(m_RotZ);
 			m_ShotPos += m_Pos;
+			CVector3 spd(0, 0, PLAYERSHOT_SPEED);
+			if (m_SubMode == MODE_WIDE) {
+				spd = Vector3(cnt * WIDE_RAD * 2 - WIDE_RAD, 0, PLAYERSHOT_SPEED);
+			}
 			m_ShotWait = PLAYERSHOT_WAIT;
-			m_ShotArray[i].Fire(m_ShotPos);
+			m_ShotArray[i].Fire(m_ShotPos, spd, m_ShotMode);
 			break;
 		}
 	}
@@ -207,10 +186,13 @@ void CPlayer::UpdateTrippleShot() {
 		for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 		{
 			if (m_ShotArray[i].GetShow()) { continue; }
-			m_ShotPos = Vector3(0.4f * (cnt * 2 - 1), 0, 0);
+			m_ShotPos = Vector3(0.4f * (cnt * 1 - 1), 0, 0);
 			m_ShotPos.RotationZ(m_RotZ);
 			m_ShotPos += m_Pos;
-			CVector3 spd(cnt * TRIPPLE_RAD - TRIPPLE_RAD, 0, PLAYERSHOT_SPEED);
+			CVector3 spd(0, 0, PLAYERSHOT_SPEED);
+			if (m_SubMode == MODE_WIDE) {
+				spd = Vector3(cnt * WIDE_RAD - WIDE_RAD, 0, PLAYERSHOT_SPEED);
+			}
 			m_ShotWait = PLAYERSHOT_WAIT;
 			m_ShotArray[i].Fire(m_ShotPos,spd,m_ShotMode);
 			break;
@@ -230,6 +212,10 @@ void CPlayer::UpdateShotMode() {
 	else if (g_pInput->IsKeyPush(MOFKEY_3))
 	{
 		m_ShotMode = MODE_TRIPPLE;
+	}
+
+	if (g_pInput->IsKeyPush(MOFKEY_RSHIFT)) {
+		m_SubMode = (m_SubMode == MODE_DIRECT) ? MODE_WIDE : MODE_DIRECT;
 	}
 }
 /**

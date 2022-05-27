@@ -23,6 +23,7 @@ private:
 	bool			m_ShotType;
 
 	PlayerShotMode	m_ShotMode;
+	PlayerShotSubMode	m_SubMode;
 public:
 	CPlayer();
 	~CPlayer();

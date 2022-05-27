@@ -9,7 +9,9 @@ class CPlayerShot{
 private:
 	CMeshContainer*		m_pMesh;
 	Vector3				m_Pos;
+	Vector3				m_Speed;
 	bool				m_bShow;
+	PlayerShotMode		m_Mode;
 public:
 	CPlayerShot();
 	~CPlayerShot();
@@ -19,4 +21,9 @@ public:
 	void Render();
 	void SetMesh(CMeshContainer *pm){ m_pMesh = pm; }
 	bool GetShow(){ return m_bShow; }
+
+	void UpdateMode();
+	void UpdateSingleMode();
+	void UpdateDoubleMode();
+	void UpdateTrippleMode();
 };
