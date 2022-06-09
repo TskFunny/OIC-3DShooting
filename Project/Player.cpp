@@ -7,6 +7,7 @@ CPlayer::CPlayer() :
 m_Mesh(),
 m_Pos(0.0f,0.0f,0.0f),
 m_RotZ(0.0f),
+m_bDead(false),
 m_ShotPos(0.0f,0.0f,0.0f),
 m_ShotMesh(),
 m_ShotArray(),
@@ -48,11 +49,13 @@ void CPlayer::Initialize(void){
 	m_Pos = Vector3(0.0f, 0.0f, -FIELD_HALF_Z + 2.0f);
 	m_ShotPos = Vector3(0.0f, 0.0f, 0.0f);
 	m_RotZ = 0;
+	m_bDead = false;
 	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 	{
 		m_ShotArray[i].Initialize();
 	}
-	m_ShotMode = MODE_DOUBLE;
+	m_ShotMode = PlayerShotMode::MODE_DOUBLE;
+	m_SubMode = PlayerShotSubMode::MODE_DIRECT;
 }
 
 /**
@@ -61,6 +64,10 @@ void CPlayer::Initialize(void){
 #define MAX_SKILLTIME 100
 static int SkillTimer = 100;
 void CPlayer::Update(void){
+	if (m_bDead)
+	{
+		return;
+	}
 	//回転方向
 	float Roll = 0;
 	float m_Speed = PLAYER_SPEED;
@@ -117,9 +124,10 @@ void CPlayer::Update(void){
 	m_RotZ -= copysignf(min(RotSpeed, abs(m_RotZ)), m_RotZ);
 
 	UpdateShotMode();
+
 	if (m_ShotWait <= 0)
 	{
-		if (g_pInput->IsKeyHold(MOFKEY_P))
+		if (g_pInput->IsKeyHold(MOFKEY_SPACE))
 		{
 			switch (m_ShotMode) {
 			case MODE_SINGLE:
@@ -143,6 +151,25 @@ void CPlayer::Update(void){
 	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 	{
 		m_ShotArray[i].Update();
+	}
+}
+
+void CPlayer::UpdateShotMode() {
+	if (g_pInput->IsKeyPush(MOFKEY_1))
+	{
+		m_ShotMode = MODE_SINGLE;
+	}
+	else if (g_pInput->IsKeyPush(MOFKEY_2))
+	{
+		m_ShotMode = MODE_DOUBLE;
+	}
+	else if (g_pInput->IsKeyPush(MOFKEY_3))
+	{
+		m_ShotMode = MODE_TRIPPLE;
+	}
+
+	if (g_pInput->IsKeyPush(MOFKEY_RSHIFT)) {
+		m_SubMode = (m_SubMode == MODE_DIRECT) ? MODE_WIDE : MODE_DIRECT;
 	}
 }
 
@@ -200,28 +227,49 @@ void CPlayer::UpdateTrippleShot() {
 	}
 }
 
-void CPlayer::UpdateShotMode() {
-	if (g_pInput->IsKeyPush(MOFKEY_1))
+/**
+ * 敵との当たり判定
+ * 引数の敵に対して当たり判定を実行する
+ * 
+ * 引数
+ * [in]				dmg				ダメージ
+ */
+void CPlayer::CollisionEnemy(CEnemy& ene) {
+	if (!ene.GetShow())
 	{
-		m_ShotMode = MODE_SINGLE;
+		return;
 	}
-	else if (g_pInput->IsKeyPush(MOFKEY_2))
+	CSphere ps = GetSphere();
+	CSphere es = ene.GetSphere();
+	if (ps.CollisionSphere(es))
 	{
-		m_ShotMode = MODE_DOUBLE;
+		m_bDead = true;
 	}
-	else if (g_pInput->IsKeyPush(MOFKEY_3))
+	// 弾との判定
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 	{
-		m_ShotMode = MODE_TRIPPLE;
-	}
-
-	if (g_pInput->IsKeyPush(MOFKEY_RSHIFT)) {
-		m_SubMode = (m_SubMode == MODE_DIRECT) ? MODE_WIDE : MODE_DIRECT;
+		if (!m_ShotArray[i].GetShow())
+		{
+			continue;
+		}
+		CSphere ss = m_ShotArray[i].GetSphere();
+		if (ss.CollisionSphere(es))
+		{
+			ene.Damage(1);
+			m_ShotArray[i].SetShow(false);
+			break;
+		}
 	}
 }
+
 /**
  * 描画
  */
 void CPlayer::Render(void){
+	if (m_bDead)
+	{
+		return;
+	}
 	//ワールド行列作成
 	CMatrix44 matWorld;
 	matWorld.RotationZ(m_RotZ);
@@ -248,6 +296,19 @@ void CPlayer::RenderDebugText(void){
 			"プレイヤー位置 X : %.1f , Y : %.1f , Z : %.1f",m_Pos.x,m_Pos.y,m_Pos.z);
 	
 	
+}
+
+/**
+ * デバッグ描画
+ */
+void CPlayer::RenderDebug(void) {
+	//当たり判定の表示
+	CGraphicsUtilities::RenderSphere(GetSphere(), Vector4(0, 1, 0, 0.3f));
+	//弾の描画
+	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
+	{
+		m_ShotArray[i].RenderDebug();
+	}
 }
 
 /**

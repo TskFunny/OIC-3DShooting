@@ -19,9 +19,12 @@ public:
 	void Fire(const Vector3& p, const Vector3& s,PlayerShotMode m);
 	void Update();
 	void Render();
+	void RenderDebug();
 	void SetMesh(CMeshContainer *pm){ m_pMesh = pm; }
 	bool GetShow(){ return m_bShow; }
-
+	CSphere GetSphere() { return CSphere(m_Pos, 0.2f); }
+	void SetShow(bool bs) { m_bShow = bs; }
+	
 	void UpdateMode();
 	void UpdateSingleMode();
 	void UpdateDoubleMode();

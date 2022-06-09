@@ -2,6 +2,7 @@
 
 #include "GameDefine.h"
 #include "PlayerShot.h"
+#include "Enemy.h"
 
 // ˆÚ“®‘¬“x
 #define PLAYER_SPEED		(0.1f)
@@ -21,6 +22,7 @@ private:
 	float			m_RotZ;
 	int				m_ShotWait;
 	bool			m_ShotType;
+	bool			m_bDead;
 
 	PlayerShotMode	m_ShotMode;
 	PlayerShotSubMode	m_SubMode;
@@ -38,4 +40,8 @@ public:
 	void UpdateDoubleShot();
 	void UpdateTrippleShot();
 	void UpdateShotMode();
+	void RenderDebug();
+	CSphere GetSphere() { return CSphere(m_Pos, 0.4f); }
+	void CollisionEnemy(CEnemy& ene);
+	bool IsDead() { return m_bDead; }
 };
