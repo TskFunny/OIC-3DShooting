@@ -83,7 +83,26 @@ void CEnemy::Update(CEnemyShot* shot,int smax){
 		//弾の発射
 		if (m_ShotWait <= 0)
 		{
-
+			CEnemyShot* newShot = CEnemyShot::FindAvailableShot(shot, smax);
+			if (newShot)
+			{
+				m_ShotWait = m_ShotWaitSet;
+				// 目標地点に向かうための方向
+				Vector3 direction = m_TargetPos - m_Pos;
+				// 目標地点までの距離を求める
+				float distance = CVector3Utilities::Length(direction);
+				// 距離が０以下=完全に同じ位置の場合は発射をしない
+				if (distance > 0)
+				{
+					// 方向を正規化
+					direction /= distance;
+					newShot->Fire(m_Pos, direction * 0.075f);
+				}
+			}
+		}
+		else
+		{
+			m_ShotWait--;
 		}
 	}
 	// アニメーション終了で消去

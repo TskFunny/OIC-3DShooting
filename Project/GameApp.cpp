@@ -22,6 +22,10 @@ CPlayer				gPlayer;
 // 敵
 #define				ENEMY_COUNT			(20)
 CEnemy				gEnemyArray[ENEMY_COUNT];
+// 敵弾
+#define				ENEMYSHOT_COUNT		(200)
+CEnemyShot			gShotArray[ENEMYSHOT_COUNT];
+CMeshContainer		gEnemyShotMesh;
 // ステージ
 CStage				gStage;
 // デバッグ表示フラグ
@@ -62,6 +66,11 @@ MofBool CGameApp::Initialize(void){
 	gPlayer.Load();
 	// ステージの素材読み込み
 	gStage.Load();
+	// 敵弾の素材読み込み
+	if (!gEnemyShotMesh.Load("eshot.mom"))
+	{
+		return false;
+	}
 
 	// プレイヤーの状態初期化
 	gPlayer.Initialize();
@@ -71,6 +80,12 @@ MofBool CGameApp::Initialize(void){
 	for (int i = 0; i < ENEMY_COUNT; i++)
 	{
 		gEnemyArray[i].Initialize();
+	}
+	//敵弾の初期化
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Initialize();
+		gShotArray[i].SetMesh(&gEnemyShotMesh);
 	}
 	
 	return TRUE;
@@ -92,13 +107,26 @@ MofBool CGameApp::Update(void){
 	// 敵の更新
 	for (int i = 0; i < ENEMY_COUNT; i++)
 	{
-		gEnemyArray[i].Update();
+		gEnemyArray[i].SetTargetPos(gPlayer.GetPosition());
+		gEnemyArray[i].Update(gShotArray,ENEMYSHOT_COUNT);
 	}
+	//敵弾の更新
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Update();
+	}
+
 	//敵との当たり判定
 	for (int i = 0; i < ENEMY_COUNT; i++)
 	{
 		gPlayer.CollisionEnemy(gEnemyArray[i]);
 	}
+	//敵弾との当たり判定
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gPlayer.CollisionEnemyShot(gShotArray[i]);
+	}
+
 	// デバッグ表示の切り替え
 	if (g_pInput->IsKeyPush(MOFKEY_F1))
 	{
@@ -113,6 +141,10 @@ MofBool CGameApp::Update(void){
 		for (int i = 0; i < ENEMY_COUNT; i++)
 		{
 			gEnemyArray[i].Initialize();
+		}
+		for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+		{
+			gShotArray[i].Initialize();
 		}
 	}
 
@@ -155,6 +187,11 @@ MofBool CGameApp::Render(void){
 	{
 		gEnemyArray[i].Render();
 	}
+	//敵弾の描画
+	for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+	{
+		gShotArray[i].Render();
+	}
 
 	//3Dデバッグ描画
 	if (gbDebug)
@@ -165,6 +202,11 @@ MofBool CGameApp::Render(void){
 		for (int i = 0; i < ENEMY_COUNT; i++)
 		{
 			gEnemyArray[i].RenderDebug();
+		}
+		//敵弾のデバッグ描画
+		for (int i = 0; i < ENEMYSHOT_COUNT; i++)
+		{
+			gShotArray[i].RenderDebug();
 		}
 		//移動可能範囲の表示
 		CMatrix44 matWorld;
@@ -210,5 +252,6 @@ MofBool CGameApp::Render(void){
 MofBool CGameApp::Release(void){
 	gPlayer.Release();
 	gStage.Release();
+	gEnemyShotMesh.Release();
 	return TRUE;
 }

@@ -7,6 +7,8 @@
 #define FIELD_HALF_Z (14.0f)
 
 /********************** Player **********************/
+// プレイヤーのHP
+#define PLAYER_MAX_HP		(20)
 // 移動速度
 #define PLAYER_SPEED		(0.1f)
 
@@ -21,7 +23,6 @@
 
 // 弾の発射角度
 #define WIDE_RAD			(0.05f)
-
 
 enum PlayerShotMode {
 	MODE_SINGLE,

@@ -18,6 +18,7 @@ private:
 	CMeshContainer	m_ShotMesh;
 	CPlayerShot		m_ShotArray[PLAYERSHOT_COUNT];
 	CVector3		m_Pos;
+	int				m_HP;
 	CVector3		m_ShotPos;
 	float			m_RotZ;
 	int				m_ShotWait;
@@ -43,5 +44,7 @@ public:
 	void RenderDebug();
 	CSphere GetSphere() { return CSphere(m_Pos, 0.4f); }
 	void CollisionEnemy(CEnemy& ene);
+	void CollisionEnemyShot(CEnemyShot& shot);
+	void Damage(int dmg);
 	bool IsDead() { return m_bDead; }
 };
