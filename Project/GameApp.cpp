@@ -108,6 +108,7 @@ MofBool CGameApp::Update(void){
 	for (int i = 0; i < ENEMY_COUNT; i++)
 	{
 		gEnemyArray[i].SetTargetPos(gPlayer.GetPosition());
+		gEnemyArray[i].SetPlayerDead(gPlayer.IsDead());
 		gEnemyArray[i].Update(gShotArray,ENEMYSHOT_COUNT);
 	}
 	//“G’e‚ÌXV
