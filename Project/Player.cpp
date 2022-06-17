@@ -241,28 +241,31 @@ void CPlayer::CollisionEnemy(CEnemy& ene) {
 	{
 		return;
 	}
-	CSphere ps = GetSphere();
-	CSphere es = ene.GetSphere();
-	if (ps.CollisionSphere(es))
+	if (m_bDead == false)
 	{
-		Damage(5);
-		ene.Damage(5);
-	}
-	// ’e‚Æ‚Ì”»’è
-	for (int i = 0; i < PLAYERSHOT_COUNT; i++)
-	{
-		if (!m_ShotArray[i].GetShow())
+		CSphere ps = GetSphere();
+		CSphere es = ene.GetSphere();
+		if (ps.CollisionSphere(es))
 		{
-			continue;
+			Damage(5);
+			ene.Damage(5);
 		}
-		CSphere ss = m_ShotArray[i].GetSphere();
-		if (ss.CollisionSphere(es))
+		// ’e‚Æ‚Ì”»’è
+		for (int i = 0; i < PLAYERSHOT_COUNT; i++)
 		{
-			ene.Damage(1);
-			m_ShotArray[i].SetShow(false);
-			break;
+			if (!m_ShotArray[i].GetShow())
+			{
+				continue;
+			}
+			CSphere ss = m_ShotArray[i].GetSphere();
+			if (ss.CollisionSphere(es))
+			{
+				ene.Damage(1);
+				m_ShotArray[i].SetShow(false);
+				break;
+			}
 		}
-	}
+	}	
 }
 
 /**
@@ -278,12 +281,15 @@ void CPlayer::CollisionEnemyShot(CEnemyShot& shot) {
 	{
 		return;
 	}
-	CSphere ss = shot.GetSphere();
-	if (ss.CollisionSphere(ps))
+	if (m_bDead == false)
 	{
-		Damage(1);
-		shot.SetShow(false);
-	}
+		CSphere ss = shot.GetSphere();
+		if (ss.CollisionSphere(ps))
+		{
+			Damage(1);
+			shot.SetShow(false);
+		}
+	}	
 }
 
 /**
